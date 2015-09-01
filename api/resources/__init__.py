@@ -1,8 +1,7 @@
 from api import api
-from api.views.groupview import GroupView
-from flask import Blueprint
+from api.resources.groupapi import GroupApi
 
-api.add_resource(GroupView,
+api.add_resource(GroupApi,
                  '/api/groups',
                  '/api/groups/',
                  '/api/groups/<string:name>')
