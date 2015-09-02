@@ -1,6 +1,5 @@
 from api import bcrypt
-from flask import request
-from flask_restful import abort
+from flask_restful import abort, request
 from functools import wraps
 
 ALLOWED_CLIENTS = {
@@ -17,11 +16,12 @@ def validate_client(func):
         if not getattr(func, 'authenticated', True):
             return func(*args, **kwargs)
 
-        if bcrypt.check_password_hash(ALLOWED_CLIENTS[request.authorization['username']],
-                                      request.authorization['password']):
-            return func(*args, **kwargs)
-        else:
-            abort(401, message="Authorization is required")
+        if request.authorization:
+            if bcrypt.check_password_hash(ALLOWED_CLIENTS[request.authorization['username']],
+                                          request.authorization['password']):
+                return func(*args, **kwargs)
+
+        abort(401, message="Authorization is required")
 
     return wrapper
 

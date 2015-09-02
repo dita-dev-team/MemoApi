@@ -1,8 +1,9 @@
+import re
 from flask_restful import abort, Resource
 from flask_restful.reqparse import RequestParser
 from werkzeug.datastructures import FileStorage
 from api.model import Group
-from api.validators import validate_file
+from api.validators import validate_client, validate_file
 
 parser = RequestParser()
 parser.add_argument("name", type=str, help="A name is required", required=True, location="form")
@@ -11,8 +12,9 @@ parser.add_argument("image", type=FileStorage, location="files")
 
 
 class GroupApi(Resource):
+    method_decorators = [validate_client]
 
-    def get(self, name=None):
+    def get(self, name=None, specifier=None, value=None):
         response = {}
         if name:
             group = Group.objects(name__iexact=name).first()
@@ -26,7 +28,11 @@ class GroupApi(Resource):
                 'image': str(group.image.grid_id) if group.image.grid_id else None
             }
         else:
-            groups = Group.objects()
+            if specifier and specifier in list(Group._fields.keys()):
+                groups = Group.specific_objects(specifier, value)
+            else:
+                groups = Group.objects()
+
             for group in groups:
                 response[group.name] = {
                     'full_name': group.full_name,
@@ -57,7 +63,10 @@ class GroupApi(Resource):
 
         return response, 201
 
-    def put(self, name):
+    def put(self, name=None):
+        if not name:
+            abort(404, message="A group name is required.")
+
         args = parser.parse_args()
         group = Group.objects(name__iexact=name).first()
 
@@ -82,7 +91,9 @@ class GroupApi(Resource):
 
         return response
 
-    def delete(self, name):
+    def delete(self, name=None):
+        if not name:
+            abort(404, message="A group name is required.")
         group = Group.objects(name__iexact=name).first()
 
         if not group:
