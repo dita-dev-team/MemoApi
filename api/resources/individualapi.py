@@ -21,8 +21,8 @@ class IndividualApi(Resource):
                 abort(404, message="An individual with that id number does not exist.")
 
             response = {
+                'id_no': individual.id_no,
                 'name': individual.name,
-                'full_name': individual.full_name,
                 'image': str(individual.image.grid_id) if individual.image.grid_id else None
             }
         else:
@@ -57,7 +57,10 @@ class IndividualApi(Resource):
 
         return response, 201
 
-    def put(self, id_no):
+    def put(self, id_no=None):
+        if not id_no:
+            abort(404, message="An id number is required.")
+
         args = parser.parse_args()
         individual = Individual.objects(id_no=id_no).first()
 
@@ -82,7 +85,10 @@ class IndividualApi(Resource):
 
         return response
 
-    def delete(self, id_no):
+    def delete(self, id_no=None):
+        if not id_no:
+            abort(404, message="An id number is required.")
+
         individual = Individual.objects(id_no=id_no).first()
 
         if not individual:

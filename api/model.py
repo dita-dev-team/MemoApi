@@ -6,7 +6,7 @@ class Group(db.Document):
     name = db.StringField(max_length=50, required=True, primary_key=True)
     full_name = db.StringField(max_length=250, required=True)
     image = db.FileField(default=None)
-    members = db.ListField(db.ReferenceField('Individual'), default=None)
+    members = db.ListField(db.ReferenceField('Individual'), default=None, unique=True)
     memos = db.ListField(db.ReferenceField('Memo'), default=None)
 
     @queryset_manager
@@ -32,9 +32,8 @@ class Individual(db.Document):
     groups = db.ListField(db.ReferenceField('Group'), default=None)
     memos = db.ListField(db.ReferenceField('Memo'), default=None)
 
-
-
-
+    def equals(self):
+        pass
 
     def __repr__(self):
         return "%s (%s)" % (self.name, self.id_no)
