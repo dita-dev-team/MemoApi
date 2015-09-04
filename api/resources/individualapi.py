@@ -2,6 +2,7 @@ from flask_restful import abort, Resource
 from flask_restful.reqparse import RequestParser
 from werkzeug.datastructures import FileStorage
 from api.model import Individual
+from api.resources.miscellaneous import group_member_processes
 from api.validators import validate_file
 
 parser = RequestParser()
@@ -100,3 +101,32 @@ class IndividualApi(Resource):
         individual.delete()
 
         return {'success': "Individual successfully deleted."}
+
+
+class IndividualByGroupsApi(Resource):
+
+    def get(self, id_no=None):
+        if not id_no:
+            abort(404, message="An id number is required.")
+
+        individual = Individual.objects(id_no=id_no).first()
+
+        if not individual:
+            abort(404, message="An individual with that id number does not exist.")
+
+        response = {'groups': {}}
+        if individual.groups:
+            for group in individual.groups:
+                response['groups'][group.name] = {
+                    'name': group.full_name,
+                }
+
+        return response
+
+    def post(self, id_no=None, name=None):
+        group_member_processes('insert', id_no, name)
+        return {'Success': 'Group added successfully'}
+
+    def delete(self, id_no=None, name=None):
+        group_member_processes('delete', id_no, name)
+        return {'Success': 'Group removed successfully'}

@@ -2,7 +2,8 @@ import re
 from flask_restful import abort, Resource
 from flask_restful.reqparse import RequestParser
 from werkzeug.datastructures import FileStorage
-from api.model import Group, Individual
+from api.model import Group
+from api.resources.miscellaneous import group_member_processes
 from api.validators import validate_client, validate_file
 
 parser = RequestParser()
@@ -159,47 +160,14 @@ class GroupByMembersApi(Resource):
             for member in group.members:
                 response['members'][member.id_no] = {
                     'name': member.name,
-                    'image': str(member.image.grid_id) if member.image.grid_id else None
                 }
 
         return response
 
     def post(self, name=None, id_no=None):
-        if not name:
-            abort(404, message="A group name is required.")
-
-        if not id_no:
-            abort(404, message="An id number is required.")
-
-        group = Group.objects(name__iexact=name).first()
-        individual = Individual.objects(id_no=id_no).first()
-
-        if not group:
-            abort(404, message="A group with that name does not exist.")
-
-        if not individual:
-            abort(404, message="An individual with that id number does not exist.")
-
-        group.update(add_to_set__members=[individual])
-
+        group_member_processes('insert', id_no, name)
         return {'Success': 'Individual added successfully'}
 
     def delete(self, name=None, id_no=None):
-        if not name:
-            abort(404, message="A group name is required.")
-
-        if not id_no:
-            abort(404, message="An id number is required.")
-
-        group = Group.objects(name__iexact=name).first()
-        individual = Individual.objects(id_no=id_no).first()
-
-        if not group:
-            abort(404, message="A group with that name does not exist.")
-
-        if not individual:
-            abort(404, message="An individual with that id number does not exist.")
-
-        group.update(pull__members=individual)
-
+        group_member_processes('delete', id_no, name)
         return {'Success': 'Individual removed successfully'}
