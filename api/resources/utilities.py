@@ -1,5 +1,11 @@
-from api.model import Group, Individual
+from api.models import Group, Individual
 from flask_restful import abort
+from flask_restful.reqparse import RequestParser
+
+
+auth_parser = RequestParser()
+auth_parser.add_argument("username", type=str, help="A username is required", required=True, location="form")
+auth_parser.add_argument("password", type=str, help="A password is required", required=True, location="form")
 
 
 def group_member_processes(process, member_id_no=None, group_name=None):

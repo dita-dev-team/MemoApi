@@ -1,14 +1,15 @@
-import re
 from flask_restful import abort, Resource
 from flask_restful.reqparse import RequestParser
 from werkzeug.datastructures import FileStorage
-from api.model import Group
-from api.resources.miscellaneous import group_member_processes
+from api import bcrypt
+from api.models import Group
+from api.resources.utilities import auth_parser, group_member_processes
 from api.validators import validate_client, validate_file
 
 parser = RequestParser()
 parser.add_argument("name", type=str, help="A name is required", required=True, location="form")
 parser.add_argument("full_name", type=str, location="form")
+parser.add_argument("password", type=str, help="A password is required", required=True, location="form")
 parser.add_argument("image", type=FileStorage, location="files")
 
 
@@ -47,6 +48,7 @@ class GroupApi(Resource):
             abort(409, message="A group with that name already exist.")
 
         group = Group(name=args['name'], full_name=args['full_name'])
+        group.password = bcrypt.generate_password_hash(args['password'])
 
         if args['image'] and validate_file(args['image'].filename):
             group.image.put(args['image'], content_type=args['image'].content_type)
@@ -171,3 +173,21 @@ class GroupByMembersApi(Resource):
     def delete(self, name=None, id_no=None):
         group_member_processes('delete', id_no, name)
         return {'Success': 'Individual removed successfully'}
+
+
+class GroupAuthentication(Resource):
+    method_decorators = [validate_client]
+
+    def post(self):
+        args = auth_parser.parse_args()
+        name = args['username']
+        password = args['password']
+
+        group = Group.objects(name__iexact=name).first()
+
+        if group:
+            if bcrypt.check_password_hash(group.password, password):
+                return {'Success': 'Group has been successfully authenticated.'}
+
+        return {'Error': 'Invalid username or password.'}, 401
+

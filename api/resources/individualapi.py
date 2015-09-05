@@ -1,13 +1,22 @@
 from flask_restful import abort, Resource
 from flask_restful.reqparse import RequestParser
 from werkzeug.datastructures import FileStorage
-from api.model import Individual
-from api.resources.miscellaneous import group_member_processes
-from api.validators import validate_file
+from api import bcrypt
+from api.models import Individual
+from api.resources.utilities import auth_parser, group_member_processes
+from api.validators import validate_file, validate_id_no
+
+
+def student_id_no(value):
+    if not validate_id_no(value):
+        raise ValueError("Invalid id number. Id number must be of type xx-xxxx")
+
+    return value
 
 parser = RequestParser()
-parser.add_argument("id_no", type=str, help="An id number is required", required=True, location="form")
+parser.add_argument("id_no", type=student_id_no, help="An id number is required", required=True, location="form")
 parser.add_argument("name", type=str, location="form")
+parser.add_argument("password", type=str, help="A password is required", required=True, location="form")
 parser.add_argument("image", type=FileStorage, location="files")
 
 
@@ -44,6 +53,7 @@ class IndividualApi(Resource):
             abort(409, message="An individual with that id number already exists.")
 
         individual = Individual(id_no=args['id_no'], name=args['name'])
+        individual.password = bcrypt.generate_password_hash(args['password'])
 
         if args['image'] and validate_file(args['image'].filename):
             individual.image.put(args['image'], content_type=args['image'].content_type)
@@ -130,3 +140,19 @@ class IndividualByGroupsApi(Resource):
     def delete(self, id_no=None, name=None):
         group_member_processes('delete', id_no, name)
         return {'Success': 'Group removed successfully'}
+
+
+class IndividualAuthentication(Resource):
+
+    def post(self):
+        args = auth_parser.parse_args()
+        id_no = args['username']
+        password = args['password']
+
+        individual = Individual.objects(id_no=id_no).first()
+
+        if individual:
+            if bcrypt.check_password_hash(individual.password, password):
+                return {'Success': 'Individual has been successfully authenticated.'}
+
+        return {'Error': 'Invalid username or password.'}, 401

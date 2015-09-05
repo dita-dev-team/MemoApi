@@ -1,3 +1,4 @@
+import re
 from api import bcrypt
 from flask_restful import abort, request
 from functools import wraps
@@ -28,4 +29,9 @@ def validate_client(func):
 
 def validate_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+
+def validate_id_no(id_no):
+    result = re.search('\d\d\W\d\d\d\d', id_no)
+    return result is not None
 

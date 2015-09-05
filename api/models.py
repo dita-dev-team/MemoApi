@@ -1,25 +1,17 @@
+"""Database models for the Memo API"""
+
+import datetime
+import mongoengine
 from api import db
-from mongoengine.queryset import queryset_manager
 
 
 class Group(db.Document):
     name = db.StringField(max_length=50, required=True, primary_key=True)
     full_name = db.StringField(max_length=250, required=True)
+    password = db.StringField(max_length=250, required=True)
     image = db.FileField(default=None)
     members = db.ListField(db.ReferenceField('Individual'), default=None, unique=True)
     memos = db.ListField(db.ReferenceField('Memo'), default=None)
-
-    @queryset_manager
-    def specific_objects(doc_cls, queryset, specifier, value):
-        if specifier == 'name':
-            return queryset.filter(name__iexact=value)
-        elif specifier == 'full_name':
-            return queryset.filter(ful_name__iexact=value)
-        else:
-            if value:
-                return queryset.filter(image__ne=None)
-            else:
-                return queryset.filter(image=value)
 
     def __repr__(self):
         return "%s (%s)" % (self.full_name, self.name)
@@ -28,12 +20,10 @@ class Group(db.Document):
 class Individual(db.Document):
     id_no = db.StringField(max_length=10, required=True, primary_key=True)
     name = db.StringField(max_length=100, required=True)
+    password = db.StringField(max_length=250, required=True)
     image = db.FileField(default=None)
-    groups = db.ListField(db.ReferenceField('Group'), default=None)
+    groups = db.ListField(db.ReferenceField('Group'), default=None, unique=True)
     memos = db.ListField(db.ReferenceField('Memo'), default=None)
-
-    def equals(self):
-        pass
 
     def __repr__(self):
         return "%s (%s)" % (self.name, self.id_no)
@@ -51,7 +41,7 @@ class Position(db.Document):
 class Memo(db.Document):
     recipient = db.GenericReferenceField(required=True)
     sender = db.GenericReferenceField(required=True)
-    date = db.DateTimeField(required=True)
+    date = db.DateTimeField(required=True, default=datetime.datetime.now().replace(microsecond=0))
     subject = db.StringField(max_length=250)
     body = db.StringField()
     priority = db.StringField(max_length=20, required=True)
@@ -60,3 +50,6 @@ class Memo(db.Document):
 
     def __repr__(self):
         return "%s (%s/%s)[%s]" % (self.subject, self.recipient, self.sender, self.date)
+
+Group.register_delete_rule(Individual, 'groups', mongoengine.PULL)
+Individual.register_delete_rule(Group, 'members', mongoengine.PULL)
