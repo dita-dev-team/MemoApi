@@ -12,19 +12,19 @@ ERROR_500 = {
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return jsonify(ERROR_404)
+    return jsonify(ERROR_404), 404
 
 
 @app.errorhandler(TypeError)
 def type_error(e):
-    return jsonify(ERROR_500)
+    return jsonify(ERROR_500), 500
 
 
 @app.errorhandler(KeyError)
 def type_error(e):
-    return jsonify(ERROR_500)
+    return jsonify(ERROR_500), 500
 
 
 @app.errorhandler(500)
 def internal_error(e):
-    return jsonify(ERROR_500)
+    return jsonify(ERROR_500), 500

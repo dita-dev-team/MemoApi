@@ -1,0 +1,6 @@
+flask
+flask-bcrypt
+flask-mongoengine
+flask-restful
+Flask-Testing
+mongoengine

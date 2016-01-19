@@ -125,13 +125,12 @@ class GroupByFullNameApi(Resource):
         return response
 
 
-class GroupByImageApi(Resource):
+class GroupImageApi(Resource):
     method_decorators = [validate_client]
 
     def get(self, image=None):
         response = {}
         if image:
-            print(image)
             groups = Group.objects(image=None)
         else:
             groups = Group.objects(image__ne=None)
@@ -145,7 +144,7 @@ class GroupByImageApi(Resource):
         return response
 
 
-class GroupByMembersApi(Resource):
+class GroupMembersApi(Resource):
     method_decorators = [validate_client]
 
     def get(self, name=None):

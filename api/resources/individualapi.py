@@ -4,7 +4,7 @@ from werkzeug.datastructures import FileStorage
 from api import bcrypt
 from api.models import Individual
 from api.resources.utilities import auth_parser, group_member_processes
-from api.validators import validate_file, validate_id_no
+from api.validators import validate_client, validate_file, validate_id_no
 
 
 def student_id_no(value):
@@ -21,6 +21,7 @@ parser.add_argument("image", type=FileStorage, location="files")
 
 
 class IndividualApi(Resource):
+    method_decorators = [validate_client]
 
     def get(self, id_no=None):
         response = {}
@@ -113,7 +114,8 @@ class IndividualApi(Resource):
         return {'success': "Individual successfully deleted."}
 
 
-class IndividualByGroupsApi(Resource):
+class IndividualGroupsApi(Resource):
+    method_decorators = [validate_client]
 
     def get(self, id_no=None):
         if not id_no:
@@ -143,12 +145,12 @@ class IndividualByGroupsApi(Resource):
 
 
 class IndividualAuthentication(Resource):
+    method_decorators = [validate_client]
 
     def post(self):
         args = auth_parser.parse_args()
         id_no = args['username']
         password = args['password']
-
         individual = Individual.objects(id_no=id_no).first()
 
         if individual:

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Dita Access Client" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Dita Admin Web" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Dita Memo Client" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../youtube_dl_gui" vcs="Git" />
   </component>
 </project>

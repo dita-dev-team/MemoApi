@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Dita Memo Api.iml" filepath="$PROJECT_DIR$/.idea/Dita Memo Api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Dita Access Client/.idea/dita-access.iml" filepath="$PROJECT_DIR$/../Dita Access Client/.idea/dita-access.iml" />
     </modules>
   </component>
 </project>
